@@ -1,0 +1,47 @@
+---
+# tasks file for postgresql
+
+- name: Add an postgresql signing key, will not download if present
+  become: yes
+  apt_key:
+    id: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+
+- name: add postgresql repository
+  become: yes
+  apt_repository:
+    repo: deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main
+    state: present
+    filename: postgresql
+
+- name: install postgresql
+  become: yes
+  apt:
+    name: "{{postgresql_packages}}"
+    state: latest
+
+- name: Enable service postgresql, and set running state
+  become: yes
+  service:
+    name: postgresql
+    enabled: yes
+    state: started
+
+- name: Set default postgres  password
+  become: yes
+  become_user: postgres 
+  postgresqlql_user:
+    name: postgres 
+    password: "{{postgres_password}}"
+
+- name: Allou external connects
+  become: yes
+  lineinfile:
+    path: /etc/postgresql/10/main/pg_hba.conf
+    insertbefore: '# IPv6 local connections:'
+    line: 'host    all             all             192.168.0.0/16          md5'
+  notify: reload postgresql
+
+
+
