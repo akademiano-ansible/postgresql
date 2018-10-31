@@ -21,27 +21,29 @@
     name: "{{postgresql_packages}}"
     state: latest
 
+- name: Set default postgres  password
+  become: yes
+  become_user: postgres 
+  postgresql_user:
+    name: postgres 
+    password: "{{postgres_password}}"
+
+- name: Update configs
+  become: yes
+  template:
+    src: "{{ item.src }}"
+    dest: "/etc/postgresql/10/main/{{ item.path }}"
+    mode: "{{ item.mode }}"
+    owner: root
+    group: root
+    force: yes
+  with_filetree: '../templates'
+  when: item.state == 'file'
+  notify: postgresql restart
+
 - name: Enable service postgresql, and set running state
   become: yes
   service:
     name: postgresql
     enabled: yes
     state: started
-
-- name: Set default postgres  password
-  become: yes
-  become_user: postgres 
-  postgresqlql_user:
-    name: postgres 
-    password: "{{postgres_password}}"
-
-- name: Allou external connects
-  become: yes
-  lineinfile:
-    path: /etc/postgresql/10/main/pg_hba.conf
-    insertbefore: '# IPv6 local connections:'
-    line: 'host    all             all             192.168.0.0/16          md5'
-  notify: reload postgresql
-
-
-
