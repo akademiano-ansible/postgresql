@@ -23,7 +23,7 @@
 
 - name: Set default postgres  password
   become: yes
-  become_user: postgres 
+  become_user: postgres
   postgresql_user:
     name: postgres 
     password: "{{postgres_password}}"
