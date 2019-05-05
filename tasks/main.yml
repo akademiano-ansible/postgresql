@@ -15,11 +15,24 @@
     state: present
     filename: postgresql
 
+- name: install required
+  become: yes
+  apt:
+    name: "{{postgresql_required_packages}}"
+    state: latest
+
 - name: install postgresql
   become: yes
   apt:
-    name: "{{postgresql_packages}}"
+    name: "{{item}}"
     state: latest
+  loop:
+    - "postgresql-{{postgresql_version}}"
+    - "postgresql-{{postgresql_version}}-postgis-{{potgresql_postgis_version}}"
+    - "postgresql-{{postgresql_version}}-postgis-scripts"
+    - "postgresql-{{postgresql_version}}-pgrouting"
+    - "postgresql-client-{{postgresql_version}}"
+
 
 - name: Set default postgres  password
   become: yes
@@ -32,10 +45,10 @@
   become: yes
   template:
     src: "{{ item.src }}"
-    dest: "/etc/postgresql/10/main/{{ item.path }}"
-    mode: "{{ item.mode }}"
+    dest: "/etc/postgresql/{{postgresql_version}}/main/{{ item.path }}"
+    mode: 0644
     owner: root
-    group: root
+    group: postgres
     force: yes
   with_filetree: '../templates'
   when: item.state == 'file'
