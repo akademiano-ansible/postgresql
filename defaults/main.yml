@@ -3,3 +3,4 @@
 postgres_password: postgres
 postgresql_version: 11
 potgresql_postgis_version: 2.5
+postgresql_network_adresses_allow: []
